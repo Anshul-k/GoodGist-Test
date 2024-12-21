@@ -1,10 +1,11 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { Context } from "../utils/Context";
 import { v4 as uuidv4 } from "uuid";
 import { Link } from "react-router-dom";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const style = {
   position: "absolute",
@@ -12,16 +13,14 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "25rem",
+  maxWidth: "90%",
   bgcolor: "background.paper",
-  border: "1px solid #0556",
   boxShadow: 24,
-  p: 4,
-  borderRadius: "15px",
+  borderRadius: "20px",
 };
 
 export const Transactions = () => {
-  const { transactionList, setTransactionList, lightTheme } =
-    useContext(Context);
+  const { transactionList, setTransactionList } = useContext(Context);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
 
@@ -67,20 +66,33 @@ export const Transactions = () => {
     handleClose();
   };
 
+  const handleDelete = (id) => {
+    setTransactionList((prev) =>
+      prev.filter((transaction) => transaction.id !== id)
+    );
+  };
+
+  useEffect(() => {
+    const storedTransactions = localStorage.getItem("transactionList");
+    if (storedTransactions) {
+      setTransactionList(JSON.parse(storedTransactions));
+    }
+  }, [setTransactionList]);
+
+  useEffect(() => {
+    localStorage.setItem("transactionList", JSON.stringify(transactionList));
+  }, [transactionList]);
+
   return (
-    <div className="flex w-2/3 flex-col pt-4 flex-1">
+    <div className="flex sm:w-2/3 w-full px-4 sm:px-8 flex-col pt-4 flex-1">
       <div className="flex justify-between">
-        <h1
-          className={`font-bold text-3xl pb-3 ${
-            lightTheme ? "text-gray-700" : "text-gray-50"
-          }`}
-        >
+        <h1 className="font-bold text-3xl sm:text-2xl pb-3 text-gray-700 dark:text-gray-100">
           Transactions
         </h1>
         <button
           onClick={handleOpen}
           type="button"
-          className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+          className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
         >
           Add Transaction
         </button>
@@ -96,19 +108,24 @@ export const Transactions = () => {
           }}
         >
           <Box sx={style}>
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-              <h1 className="text-lg font-semibold">Fill the Details</h1>
-              <div className="border-2 rounded-md p-2">
+            <form
+              className="flex flex-col gap-4 p-4 rounded-lg bg-white dark:bg-gray-800"
+              onSubmit={handleSubmit}
+            >
+              <h1 className="text-lg font-semibold dark:text-gray-100">
+                Fill the Details
+              </h1>
+              <div className="border-2 rounded-md p-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
                 <input
-                  className="outline-none w-full p-2"
+                  className="outline-none w-full p-2 bg-transparent dark:placeholder-gray-400"
                   type="text"
                   placeholder="Transaction Name"
                   ref={transactionName}
                 />
               </div>
-              <div className="border-2 rounded-md p-2">
+              <div className="border-2 rounded-md p-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
                 <input
-                  className="outline-none w-full p-2"
+                  className="outline-none w-full p-2 bg-transparent dark:placeholder-gray-400"
                   type="text"
                   placeholder="Transaction Amount"
                   ref={transactionAmount}
@@ -116,7 +133,7 @@ export const Transactions = () => {
               </div>
               <select
                 ref={typeOfTransaction}
-                className="border-2 rounded-md p-2"
+                className="border-2 rounded-md p-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
               >
                 <option value="">Select Type</option>
                 <option value="income">Income</option>
@@ -126,14 +143,14 @@ export const Transactions = () => {
                 <Typography
                   variant="body2"
                   color="error"
-                  className="text-red-500"
+                  className="text-red-500 dark:text-red-400"
                 >
                   {error}
                 </Typography>
               )}
               <button
                 type="submit"
-                className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-4 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+                className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-4 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
               >
                 Add Transaction
               </button>
@@ -143,11 +160,7 @@ export const Transactions = () => {
       </div>
       <div className="flex flex-col w-full mt-6">
         {transactionList.length === 0 && (
-          <p
-            className={`text-center flex-1 text-lg font-bold ${
-              lightTheme ? "text-gray-700" : "text-gray-100"
-            }`}
-          >
+          <p className="text-center flex-1 text-lg font-bold text-gray-700 dark:text-gray-100">
             No Transactions found, please add a new Transaction.
           </p>
         )}
@@ -156,28 +169,36 @@ export const Transactions = () => {
             {transactionList.map((item) => (
               <div
                 key={item.id}
-                className="flex justify-between items-center border-2 rounded-lg shadow-lg p-4 bg-white"
+                className="flex justify-between items-center border-2 rounded-lg shadow-lg p-4 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300"
               >
-                <div className="flex flex-col">
-                  <h2 className="font-semibold text-lg">{item.name}</h2>
+                <div className="flex">
+                  <h2 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-gray-100">
+                    {item.name}
+                  </h2>
                 </div>
-                <div className="flex gap-4 items-center">
-                  <p className="font-semibold text-lg text-green-600">
+                <div className="flex gap-3 sm:gap-4 items-center">
+                  <p className="font-semibold text-base sm:text-lg text-green-600 dark:text-green-400">
                     ₹{item.amount}
                   </p>
                   <p
-                    className={`font-semibold ${
-                      item.type === "income" ? "text-green-600" : "text-red-600"
+                    className={`font-semibold sm:text-lg text-base ${
+                      item.type === "income"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
                     }`}
                   >
                     {item.type === "income" ? "Income" : "Expense"}
                   </p>
                   <Link
                     to={`/view/${item.id}`}
-                    className="text-white bg-gray-700 hover:bg-gray-800 rounded-lg text-sm py-1 px-3 focus:outline-none"
+                    className="text-white bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-lg text-sm py-1 px-3 focus:outline-none"
                   >
-                    Detailed View
+                    View
                   </Link>
+                  <DeleteIcon
+                    onClick={() => handleDelete(item.id)}
+                    className="cursor-pointer text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-600"
+                  />
                 </div>
               </div>
             ))}

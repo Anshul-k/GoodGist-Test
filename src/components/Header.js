@@ -1,47 +1,29 @@
 import React, { useContext } from "react";
 import Switch from "@mui/material/Switch";
 import { Context } from "../utils/Context";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 
 const Header = () => {
-  const { lightTheme, setLightTheme } = useContext(Context);
+  const { theme, toggleTheme } = useContext(Context);
 
-  const handleChange = () => {
-    setLightTheme(!lightTheme);
-  };
-
+  const isLightTheme = theme === "light";
   return (
-    <div
-      className={`flex justify-between p-4 rounded border-2 shadow-md ${
-        lightTheme ? "bg-gray-100" : "bg-gray-800 border-gray-800"
-      }`}
-    >
-      <h1
-        className={`font-bold text-2xl ${
-          lightTheme ? "text-gray-700" : "text-white"
-        }`}
-      >
-        Personal Finance Tracker
+    <div className="flex justify-between p-4 rounded border-2 shadow-md bg-gray-100 dark:bg-gray-800 dark:border-gray-800">
+      <h1 className="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-600 dark:from-indigo-400 dark:to-pink-400">
+        PF Tracker
       </h1>
-      <div>
-        <span
-          className={`text-sm font-semibold ${
-            lightTheme ? "text-gray-700" : "text-gray-50"
-          }`}
-        >
-          Dark
-        </span>
+      <div className="flex items-center gap-2">
         <Switch
-          checked={lightTheme}
-          onChange={handleChange}
+          checked={isLightTheme}
+          onChange={toggleTheme}
           inputProps={{ "aria-label": "controlled" }}
         />
-        <span
-          className={`text-sm font-semibold ${
-            lightTheme ? "text-gray-700" : "text-gray-50"
-          }`}
-        >
-          Light
-        </span>
+        {theme === "dark" ? (
+          <Brightness4Icon className="text-white" />
+        ) : (
+          <Brightness7Icon className="text-yellow-500" />
+        )}
       </div>
     </div>
   );
